@@ -1,4 +1,8 @@
-class Step:
+from abc import ABC, abstractmethod
+from .point import Point
+
+
+class Step(ABC):
     """
         A single step in a thermodynamic process
 
@@ -8,11 +12,16 @@ class Step:
         self._start = start
         self._end = end
 
+    @property
+    def start(self):
+        return self._start
+    
+    @property
+    def end(self):
+        return self._end
+
     def compute(self):
         """
             Compute the properties of the end point
             Tries first in one direction and then in the other one
         """
-        # The values are updated to the point
-
-
