@@ -1,5 +1,6 @@
 from ..step import Step
 from ..point import Point
+from ..utils import safe
 
 
 class Isobaric(Step):
@@ -26,88 +27,64 @@ class Isobaric(Step):
         B.p = B.p or A.p
 
         # Using the ideal gas law (p * v = R * T)
-        if A.T:
-            A.v = A.v or R * A.T / A.p
-
-        if A.v:
-            A.T = A.T or A.p * A.v / R
-
-        if B.T:
-            B.v = B.v or R * B.T / B.p
-        
-        if B.v:
-            B.T = B.T or B.p * B.v / R
+        A.v = A.v or safe(lambda: R * A.T / A.p)
+        A.T = A.T or safe(lambda: A.p * A.v / R)
+        A.p = A.p or safe(lambda: R * A.T / A.v)
+        B.v = B.v or safe(lambda: R * B.T / B.p)
+        B.T = B.T or safe(lambda: B.p * B.v / R)
+        B.p = B.p or safe(lambda: R * B.T / B.v)
 
         # If we don't have the pressure, we can compute it using the ideal gas law
-        if not A.T and all(A.v, B.v, B.T):
-            A.T = B.T * (A.v / B.v)
-
-        if not B.T and all(A.v, B.v, A.T):
-            B.T = A.T * (B.v / A.v)
-
-        if not A.v and all(A.T, B.T, B.v):
-            A.v = B.v * (A.T / B.T)
-
-        if not B.v and all(A.T, B.T, A.v):
-            B.v = A.v * (B.T / A.T)
-
+        A.T = A.T or safe(lambda: B.T * (A.v / B.v))
+        B.T = B.T or safe(lambda: A.T * (B.v / A.v))
+        A.v = A.v or safe(lambda: B.v * (A.T / B.T))
+        B.v = B.v or safe(lambda: A.v * (B.T / A.T))
         
-
-
 
 if __name__ == "__main__":
     # Exercise 3
-    p1 = Point("P1", T=298, p=1)
-    p2 = Point("P2", p=50)
-    p3 = Point("P3", T=1600)
-    p4 = Point("P4")
+    # Point('P1', T=911.25, p=50.00, v=5230.56)
+    # Point('P2', T=1600.00, p=50.00, v=9184.00)
+    # TODO: Flipped p1 and p2
 
+    p1 = Point("P1", T=911.25, p=50)
+    p2 = Point("P2", T=1600)
+    isobaric = Isobaric(p1, p2)
+    isobaric.compute()
     print(p1)
     print(p2)
-    print(p3)
-    print(p4)
 
-    isentropic = Isentropic(p1, p2)
-    isentropic.compute()
-
-    isobaric = Isobaric(p2, p3)
+    p1 = Point("P1", T=911.25)
+    p2 = Point("P2", T=1600, p=50)
+    isobaric = Isobaric(p1, p2)
     isobaric.compute()
-
-    isentropic = Isentropic(p3, p4)
-    isentropic.compute()
-
-    isochoric = Isochoric(p4, p1)
-    isochoric.compute()
-
-    print("Second Loop")
-
-    isentropic = Isentropic(p1, p2)
-    isentropic.compute()
-
-    isobaric = Isobaric(p2, p3)
-    isobaric.compute()
-
-    isentropic = Isentropic(p3, p4)
-    isentropic.compute()
-
-    isochoric = Isochoric(p4, p1)
-    isochoric.compute()
-
-    print("Third Loop")
-
-    isentropic = Isentropic(p1, p2)
-    isentropic.compute()
-
-    isobaric = Isobaric(p2, p3)
-    isobaric.compute()
-
-    isentropic = Isentropic(p3, p4)
-    isentropic.compute()
-
-    isochoric = Isochoric(p4, p1)
-    isochoric.compute()
-
     print(p1)
     print(p2)
-    print(p3)
-    print(p4)
+
+    p1 = Point("P1", p=50, v=5230.57)
+    p2 = Point("P2", v=9184.00)
+    isobaric = Isobaric(p1, p2)
+    isobaric.compute()
+    print(p1)
+    print(p2)
+
+    p1 = Point("P1", v=5230.56)
+    p2 = Point("P2", p=50, v=9184.00)
+    isobaric = Isobaric(p1, p2)
+    isobaric.compute()
+    print(p1)
+    print(p2)
+
+    p1 = Point("P1", v=5230.57)
+    p2 = Point("P2", p=50, T=1600.00)
+    isobaric = Isobaric(p1, p2)
+    isobaric.compute()
+    print(p1)
+    print(p2)
+
+    p1 = Point("P1", T=911.25, p=50.00)
+    p2 = Point("P2", v=9184.00)
+    isobaric = Isobaric(p1, p2)
+    isobaric.compute()
+    print(p1)
+    print(p2)
