@@ -88,7 +88,27 @@ class Isentropic(Step):
         A.v = A.v or safe(lambda: B.v * e)
         B.v = B.v or safe(lambda: A.v / e)
 
+    def work(self, R=287, gamma=1.4) -> float:
+        """
+        First law for a Closed system:
+        
+        Δu = q - w
 
+        Δu: Change in internal energy.
+        q: Heat transfer.
+        w: Work done by the system
+
+        For an isentropic process: q = 0 (No heat transfer)
+        => Δu = -w or w = - Δu = - c_v ΔT
+
+        Work done by the system: positive
+        Work done on the system: negative
+        """
+        c_v = R / (gamma - 1)
+
+        A, B = self.start, self.end
+        return -c_v * (B.T - A.T)
+        
 if __name__ == "__main__":
     # Point('P1', T=298.00, p=1.00, v=85526.00)
     # Point('P2', T=911.25, p=50.00, v=5230.56)

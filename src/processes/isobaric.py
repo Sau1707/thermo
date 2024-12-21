@@ -19,7 +19,7 @@ class Isobaric(Step):
         A.p = A.p or B.p
         B.p = B.p or A.p
 
-    def compute(self, R=287):
+    def compute(self, R=287, gamma=1.4):
         A, B = self.start, self.end
 
         # The pressure is constant

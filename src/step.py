@@ -20,8 +20,16 @@ class Step(ABC):
     def end(self):
         return self._end
 
-    def compute(self):
+    def compute(self, R: float, gamma: float):
         """
             Compute the properties of the end point
             Tries first in one direction and then in the other one
         """
+
+    def get_heat_flow(self, **kwargs):
+        """
+            Compute the heat flow in the process
+
+            Q / m = h2 - h1
+        """
+        

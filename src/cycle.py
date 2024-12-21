@@ -11,8 +11,14 @@ class Cycle:
 
         Once all the steps are added, the process can be analyzed
         We do a while loop in two directions. Until all the points are computed
+
+        R = 287 J/kgK
+        gamma
+        c_p or c_v
     """
-    def __init__(self):
+    def __init__(self, R=287, gamma=1.4):
+        self.R = R
+        self.gamma = gamma
         self.steps: list[Step] = []
 
     def add_step(self, step: Step):
@@ -22,6 +28,8 @@ class Cycle:
         """
         TODO: Try to solve the process, raise and error if it's impossible
         """
+        for step in self.steps:
+            step.compute(self.R, self.gamma)
         
     def plot(self):
         """
