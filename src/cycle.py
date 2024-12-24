@@ -1,5 +1,6 @@
 from .step import Step
 from .point import Point
+from src.tables.specific_heats import SPECIFIC_HEATS
 import matplotlib.pyplot as plt
 
 
@@ -16,9 +17,21 @@ class Cycle:
         gamma
         c_p or c_v
     """
-    def __init__(self, R=287, gamma=1.4):
+    def __init__(self, gas="air"):
+        # The cycle can either be air or steam
+        """
+        Steam /  
+        """
+
+        """
+        Air: Mixture of gases (primarily nitrogen and oxygen) that behaves as a single-phase gas under most practical conditions
+        does not have a saturation line like water
+        """
+        R, k = SPECIFIC_HEATS[gas]
+    
+        # TODO: R and gamma can be computed using the properties of the gas
         self.R = R
-        self.gamma = gamma
+        self.k = k
         self.steps: list[Step] = []
 
     def add_step(self, step: Step):
@@ -28,6 +41,10 @@ class Cycle:
         """
         TODO: Try to solve the process, raise and error if it's impossible
         """
+        # First we loop over all he points and compute the missing properties if possible
+        # -> air: gas -> GAS LAWS CAN BE USED
+        # -> steam: liquid -> TABLES MUST BE USED
+
         for step in self.steps:
             step.compute(self.R, self.gamma)
         

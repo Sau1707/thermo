@@ -13,11 +13,9 @@ class Process(ABC):
         R (float): The gas constant.
         gamma (float): The specific heat ratio.
     """
-    def __init__(self, A: Point, B: Point, R: float, gamma: float):
+    def __init__(self, A: Point, B: Point):
         self.A = A
         self.B = B
-        self.R = R
-        self.gamma = gamma
 
     @abstractmethod
     def compute(self):

@@ -1,15 +1,17 @@
 from collections import defaultdict
-
+from .utils import safe
 
 class Point:
     def __init__(self, name: str, *, 
-                temperature: float = None, T: float = None,
-                pressure: float = None, p: float = None,
-                enthalpy: float = None, h: float = None,
-                entropy: float = None, s: float = None,
-                volume: float = None, v: float = None):
+                temperature: float = None,
+                pressure: float = None,
+                enthalpy: float = None,
+                entropy: float = None,
+                internal_energy: float = None,  
+                volume: float = None):
         """
-            Create a new point with the given properties
+            Create a new point with the given properties. 
+            The point only contains the data, does not compute anything.
 
             Args:
                 name (str): The name of the point
@@ -24,11 +26,13 @@ class Point:
         self._default = defaultdict(lambda: None)
         self._computed = defaultdict(lambda: None)
 
-        self._default["temperature"] = temperature or T
-        self._default["pressure"] = pressure or p
-        self._default["enthalpy"] = enthalpy or h
-        self._default["entropy"] = entropy or s
-        self._default["volume"] = volume or v
+        self._default["volume"] = volume # v
+        self._default["pressure"] = pressure # p
+        self._default["temperature"] = temperature # T
+
+        self._default["entropy"] = entropy # s
+        self._default["enthalpy"] = enthalpy # h
+        self._default["internal_energy"] = internal_energy # u
 
     def __repr__(self):
         fn = lambda value: f"{value:.2f}" if isinstance(value, (int, float)) else "None"
@@ -39,6 +43,13 @@ class Point:
                 f"h={fn(self.enthalpy)}, "
                 f"s={fn(self.entropy)}, "
                 f"v={fn(self.volume)})")
+
+    def update(self, R=287):
+        """Update the point using the gas laws (p * v = R * T)"""
+
+        self.v = self.v or safe(lambda: R * self.T / self.p)
+        self.T = self.T or safe(lambda: self.p * self.v / R)
+        self.p = self.p or safe(lambda: R * self.T / self.v)
 
     ############################################
     # Properties

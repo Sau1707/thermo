@@ -1,9 +1,9 @@
-from ..step import Step
+from ..step import Process
 from ..point import Point
 from ..utils import safe
 
-
-class Isentropic(Step):
+# This process can have an efficiency - 4s or 4
+class Isentropic(Process):
     """
     https://www.grc.nasa.gov/www/k-12/airplane/compexp.html
 
@@ -72,13 +72,9 @@ class Isentropic(Step):
         # First try to compute the compression ratio e, using the data that is available
         e = self.compression_ratio(gamma)
 
-        # Using the ideal gas law (p * v = R * T)
-        A.v = A.v or safe(lambda: R * A.T / A.p)
-        A.T = A.T or safe(lambda: A.p * A.v / R)
-        A.p = A.p or safe(lambda: R * A.T / A.v)
-        B.v = B.v or safe(lambda: R * B.T / B.p)
-        B.T = B.T or safe(lambda: B.p * B.v / R)
-        B.p = B.p or safe(lambda: R * B.T / B.v)
+        # Update the points
+        A.update(R)
+        B.update(R)
 
         # Using the compression ratio
         A.p = A.p or safe(lambda: B.p / e ** gamma)

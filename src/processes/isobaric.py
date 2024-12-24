@@ -1,44 +1,75 @@
-from ..step import Step
+from ..step import Process
 from ..point import Point
 from ..utils import safe
+import matplotlib.pyplot as plt
 
 
-class Isobaric(Step):
+class Isobaric(Process):
     """
-    p = constant
+    Isobaric Process (p = constant)
+    - Pressure remains constant throughout the process (p_A = p_B).
+    - Work: W = p * ΔV
+    - Heat: Q = ΔU + W
+    - Represented on a P-V diagram as a horizontal line.
     """
-    def __init__(self, start, end):
-        super().__init__(start, end)
-        A, B = self.start, self.end
 
-        # The pressure is constant (P_A = P_B)
+    def __init__(self, A: Point, B: Point, R=287, gamma=1.4):
+        super().__init__(A, B, R, gamma)
+
+        # The pressure must remain constant (p_A = p_B)
         if A.p and B.p:
-            assert A.p == B.p, "Pressure is not constant, something is wrong with the data"
+            assert A.p == B.p, "Pressure is not constant, something is wrong with the data."
 
-        # Assign the values
+        # Assign consistent pressure values if one is missing
         A.p = A.p or B.p
         B.p = B.p or A.p
 
-    def compute(self, R=287, gamma=1.4):
-        A, B = self.start, self.end
+    def compute(self):
+        """
+        Compute the missing thermodynamic properties based on the ideal gas law
+        and relationships for an isobaric process.
+        """
+        A, B, R = self.A, self.B, self.R
 
-        # The pressure is constant
+        # Ensure pressure is constant
         A.p = A.p or B.p
         B.p = B.p or A.p
 
-        # Using the ideal gas law (p * v = R * T)
-        A.v = A.v or safe(lambda: R * A.T / A.p)
-        A.T = A.T or safe(lambda: A.p * A.v / R)
-        A.p = A.p or safe(lambda: R * A.T / A.v)
-        B.v = B.v or safe(lambda: R * B.T / B.p)
-        B.T = B.T or safe(lambda: B.p * B.v / R)
-        B.p = B.p or safe(lambda: R * B.T / B.v)
+        # Update the points with current state
+        A.update(R)
+        B.update(R)
 
-        # If we don't have the pressure, we can compute it using the ideal gas law
+        # Compute missing properties using the ideal gas law
         A.T = A.T or safe(lambda: B.T * (A.v / B.v))
         B.T = B.T or safe(lambda: A.T * (B.v / A.v))
         A.v = A.v or safe(lambda: B.v * (A.T / B.T))
         B.v = B.v or safe(lambda: A.v * (B.T / A.T))
+
+    def work(self) -> float:
+        """
+        Calculate the work done during the isobaric process.
+        W = p * ΔV
+        """
+        return 0
+    
+    def heat(self) -> float:
+        """
+        Calculate the heat transferred during the isobaric process.
+        Q = ΔU + W
+        ΔU = n * C_v * ΔT (internal energy change)
+        W = p * ΔV
+        """
+        return 0
+
+    def plot(self, ax_pv: plt.Axes, ax_ts: plt.Axes):
+        """"""
+        A, B = self.A, self.B
+
+        # Plot the process on the P-V diagram
+        ax_pv.plot([A.v, B.v], [A.p, B.p], label="Isobaric", color="red")
+
+        # Plot the process on the T-S diagram
+        ax_ts.plot([A.s, B.s], [A.T, B.T], label="Isobaric", color="red")
         
 
 if __name__ == "__main__":
@@ -88,3 +119,11 @@ if __name__ == "__main__":
     isobaric.compute()
     print(p1)
     print(p2)
+
+    # Try to plot
+    import matplotlib.pyplot as plt
+    fig, (ax_pv, ax_ts) = plt.subplots(1, 2)
+    ax_pv.set_title("P-V Diagram")
+    ax_ts.set_title("T-S Diagram")
+    isobaric.plot(ax_pv, ax_ts)
+    plt.show()
