@@ -19,11 +19,16 @@ class TableOverheated(pd.DataFrame):
         df = pd.read_csv(os.path.join(os.path.dirname(__file__), csv))
         super().__init__(df)
 
-    def get(self, **kwargs) -> RowOverheated:
-        key, value = list(kwargs.items())[0]
-        df: pd.DataFrame = self[self[key] == value]
+    def get(self, T: float, p: float) -> RowOverheated:
+        # We can either interpolate using p or T
+        df = pd.DataFrame()
+        if len(df := self[self["p"] == p]) > 1:
+            key, value = "T", T
+        elif len(df := self[self["T"] == T]) > 1:
+            key, value = "p", p
 
-        key, value = list(kwargs.items())[1]
+        assert not df.empty, "No data found"
+
         df = df.sort_values(by=key)
 
         # Find the two rows surrounding the target value
